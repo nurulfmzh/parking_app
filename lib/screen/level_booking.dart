@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:parking_app/auth/booking.dart';
+import 'package:parking_app/screen/dashboard.dart';
+import 'package:uuid/uuid.dart';
 
 class LevelBookingPage extends StatefulWidget {
   final String mallName;
@@ -21,6 +26,48 @@ class _LevelBookingPageState extends State<LevelBookingPage> {
   void _onNavTap(int idx) {
     if (idx == _myTabIndex) return;
     Navigator.pop(context, idx); // pop back to root with tab index
+  }
+
+  Future<void> _bookParkingSlot(String zone) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please log in to book a slot')));
+      return;
+    }
+
+    final now = DateTime.now();
+    final booking = Booking(
+      slotId: '${widget.mallName} - ${widget.level} - Zone $zone',
+      startTime: now,
+      endTime: now.add(Duration(hours: 1)), // example duration
+      createdAt: now,
+    );
+
+    try {
+      await FirebaseFirestore.instance.collection('bookings').add({
+        'slotId': booking.slotId,
+        'userId': user.uid,
+        'startTime': booking.startTime.toIso8601String(),
+        'endTime': booking.endTime.toIso8601String(),
+        'createdAt': booking.createdAt.toIso8601String(),
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Booking confirmed for $zone')));
+
+      // Go to dashboard or home after successful booking
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeDashboard()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Booking failed: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -55,11 +102,9 @@ class _LevelBookingPageState extends State<LevelBookingPage> {
             ...widget.zones.entries.map(
               (e) => Card(
                 child: ListTile(
-                  title: Text('${e.key}  –  ${e.value} bays available'),
+                  title: Text('${e.key}  -  ${e.value} bays available'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    // TODO: push next booking step
-                  },
+                  onTap: () => _bookParkingSlot(e.key),
                 ),
               ),
             ),

@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:parking_app/screen/booking_history.dart';
+import 'package:parking_app/screen/parking_home.dart';
 import 'package:parking_app/screen/user_profile.dart';
 
 class HomeDashboard extends StatelessWidget {
@@ -134,7 +136,12 @@ class HomeDashboard extends StatelessWidget {
                         label: 'Find Parking',
                         onTap: () {
                           // Navigator.push to parking tab (index 1)
-                          Navigator.pop(context, 1);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ParkingHome(),
+                            ),
+                          );
                         },
                       ),
                       _ActionCard(
@@ -148,14 +155,24 @@ class HomeDashboard extends StatelessWidget {
                         icon: Icons.history,
                         label: 'History',
                         onTap: () {
-                          // TODO: push history page
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BookingHistory(),
+                            ),
+                          );
                         },
                       ),
                       _ActionCard(
                         icon: Icons.account_circle,
                         label: 'Profile',
                         onTap: () {
-                          const ProfileScreen();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
